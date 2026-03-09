@@ -67,6 +67,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- include "envoy.initContainers" . | nindent 6 }}
+      {{- if and .Values.envoy.nodeLocality .Values.envoy.nodeLocality.enabled }}
+      initContainers:
+      {{- include "envoy.initContainers.nodeLocality" . | nindent 6 }}
+      {{- end }}
       containers:
       - name: cilium-envoy
         image: {{ include "cilium.image" .Values.envoy.image | quote }}
@@ -76,6 +80,9 @@ spec:
         args:
         {{- if .Values.envoy.securityContext.capabilities.keepCapNetBindService }}
         - '--keep-cap-net-bind-service'
+        {{- end }}
+        {{- if and .Values.envoy.nodeLocality .Values.envoy.nodeLocality.enabled }}
+        - '--service-zone @/var/run/cilium/envoy-locality-config/service-zone'
         {{- end }}
         - '--'
         - '-c /var/run/cilium/envoy/bootstrap-config.json'
@@ -198,6 +205,7 @@ spec:
           mountPropagation: HostToContainer
         {{- end }}
         {{- include "envoy.volumeMounts.extra" . | nindent 8 }}
+        {{- include "envoy.volumeMounts.nodeLocality" . | nindent 8 }}
         {{- range .Values.envoy.extraHostPathMounts }}
         - name: {{ .name }}
           mountPath: {{ .mountPath }}
@@ -259,6 +267,7 @@ spec:
           type: DirectoryOrCreate
       {{- end }}
       {{- include "envoy.hostPathMounts.extra" . | nindent 4 }}
+      {{- include "envoy.hostPathMounts.nodeLocality" . | nindent 4 }}
       {{- range .Values.envoy.extraHostPathMounts }}
       - name: {{ .name }}
         hostPath:
