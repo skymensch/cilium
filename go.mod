@@ -45,7 +45,7 @@ require (
 	github.com/go-openapi/loads v0.23.3
 	github.com/go-openapi/runtime v0.29.3
 	github.com/go-openapi/spec v0.22.4
-	github.com/go-openapi/strfmt v0.26.0
+	github.com/go-openapi/strfmt v0.26.1
 	github.com/go-openapi/swag v0.25.5
 	github.com/go-openapi/validate v0.25.2
 	github.com/google/cel-go v0.27.0
@@ -98,7 +98,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
-	github.com/vishvananda/netlink v1.3.2-0.20260311185454-b2290cd70382
+	github.com/vishvananda/netlink v1.3.2-0.20260317020318-ddba687f44e5
 	github.com/vishvananda/netns v0.0.5
 	go.etcd.io/etcd/api/v3 v3.6.8
 	go.etcd.io/etcd/client/pkg/v3 v3.6.8
@@ -121,7 +121,7 @@ require (
 	golang.org/x/time v0.15.0
 	golang.org/x/tools v0.43.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260311181403-84a4fc48630c
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260316180232-0b37fe3546d5
 	google.golang.org/grpc v1.79.2
 	google.golang.org/protobuf v1.36.11
 	helm.sh/helm/v4 v4.1.3
@@ -136,7 +136,7 @@ require (
 	k8s.io/kubectl v0.35.2
 	k8s.io/metrics v0.35.2
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
-	sigs.k8s.io/controller-runtime v0.23.1
+	sigs.k8s.io/controller-runtime v0.23.3
 	sigs.k8s.io/gateway-api v1.4.1
 	sigs.k8s.io/mcs-api v0.3.1-0.20260224125735-0f775a3eff97
 	sigs.k8s.io/mcs-api/conformance v0.0.0-20260311160536-15301c2b6a81
