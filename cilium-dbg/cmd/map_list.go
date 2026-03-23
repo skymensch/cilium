@@ -57,9 +57,13 @@ func printMapList(mapList *models.BPFMapList) {
 	w := tabwriter.NewWriter(os.Stdout, 5, 0, 3, ' ', 0)
 	fmt.Fprintf(w, "Name\tNum entries\tNum errors\tCache enabled\n")
 	for _, m := range mapList.Maps {
-		entries, errors := 0, 0
-		cacheEnabled := m.Cache != nil
+		if m.Cache == nil {
+			fmt.Fprintf(w, "%s\tunknown\t0\tfalse\n",
+				path.Base(m.Path))
+			continue
+		}
 
+		entries, errors := 0, 0
 		for _, e := range m.Cache {
 			if e != nil {
 				if e.LastError != "" {
@@ -68,8 +72,8 @@ func printMapList(mapList *models.BPFMapList) {
 				entries++
 			}
 		}
-		fmt.Fprintf(w, "%s\t%d\t%d\t%t\n",
-			path.Base(m.Path), entries, errors, cacheEnabled)
+		fmt.Fprintf(w, "%s\t%d\t%d\ttrue\n",
+			path.Base(m.Path), entries, errors)
 	}
 	w.Flush()
 }
