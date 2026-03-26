@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strconv"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -57,23 +58,25 @@ func printMapList(mapList *models.BPFMapList) {
 	w := tabwriter.NewWriter(os.Stdout, 5, 0, 3, ' ', 0)
 	fmt.Fprintf(w, "Name\tNum entries\tNum errors\tCache enabled\n")
 	for _, m := range mapList.Maps {
-		if m.Cache == nil {
-			fmt.Fprintf(w, "%s\tunknown\t0\tfalse\n",
-				path.Base(m.Path))
-			continue
+		entries := "unknown"
+		errors := 0
+		cacheEnabled := m.Cache != nil
+
+		if cacheEnabled {
+			var entryCount int
+			for _, e := range m.Cache {
+				if e != nil {
+					if e.LastError != "" {
+						errors++
+					}
+					entryCount++
+				}
+			}
+			entries = strconv.Itoa(entryCount)
 		}
 
-		entries, errors := 0, 0
-		for _, e := range m.Cache {
-			if e != nil {
-				if e.LastError != "" {
-					errors++
-				}
-				entries++
-			}
-		}
-		fmt.Fprintf(w, "%s\t%d\t%d\ttrue\n",
-			path.Base(m.Path), entries, errors)
+		fmt.Fprintf(w, "%s\t%s\t%d\t%t\n",
+			path.Base(m.Path), entries, errors, cacheEnabled)
 	}
 	w.Flush()
 }
