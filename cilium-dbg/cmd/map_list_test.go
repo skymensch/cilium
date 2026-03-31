@@ -5,9 +5,12 @@ package cmd
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/cilium/cilium/api/v1/models"
 )
@@ -67,23 +70,25 @@ func TestPrintMapList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			old := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+			stdout := os.Stdout
+			readEnd, writeEnd, err := os.Pipe()
+			require.NoError(t, err)
+			os.Stdout = writeEnd
+			defer func() { os.Stdout = stdout }()
 
 			printMapList(&models.BPFMapList{Maps: tt.maps})
 
-			w.Close()
-			os.Stdout = old
+			writeEnd.Close()
+			os.Stdout = stdout
 
 			var buf bytes.Buffer
-			buf.ReadFrom(r)
+			_, err = io.Copy(&buf, readEnd)
+			require.NoError(t, err)
 			output := buf.String()
 
 			for _, exp := range tt.expected {
-				if !strings.Contains(output, exp) {
-					t.Errorf("expected output to contain %q, got:\n%s", exp, output)
-				}
+				require.True(t, strings.Contains(output, exp),
+					"expected output to contain %q, got:\n%s", exp, output)
 			}
 		})
 	}
