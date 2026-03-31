@@ -59,24 +59,25 @@ func printMapList(mapList *models.BPFMapList) {
 	fmt.Fprintf(w, "Name\tNum entries\tNum errors\tCache enabled\n")
 	for _, m := range mapList.Maps {
 		entries := "unknown"
-		errors := 0
+		var errorCount int
 		cacheEnabled := m.Cache != nil
 
 		if cacheEnabled {
 			var entryCount int
 			for _, e := range m.Cache {
-				if e != nil {
-					if e.LastError != "" {
-						errors++
-					}
-					entryCount++
+				if e == nil {
+					continue
+				}
+				entryCount++
+				if e.LastError != "" {
+					errorCount++
 				}
 			}
 			entries = strconv.Itoa(entryCount)
 		}
 
 		fmt.Fprintf(w, "%s\t%s\t%d\t%t\n",
-			path.Base(m.Path), entries, errors, cacheEnabled)
+			path.Base(m.Path), entries, errorCount, cacheEnabled)
 	}
 	w.Flush()
 }
