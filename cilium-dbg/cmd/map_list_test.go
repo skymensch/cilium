@@ -5,8 +5,6 @@ package cmd
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"strings"
 	"testing"
 
@@ -70,20 +68,8 @@ func TestPrintMapList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout := os.Stdout
-			readEnd, writeEnd, err := os.Pipe()
-			require.NoError(t, err)
-			os.Stdout = writeEnd
-			defer func() { os.Stdout = stdout }()
-
-			printMapList(&models.BPFMapList{Maps: tt.maps})
-
-			writeEnd.Close()
-			os.Stdout = stdout
-
 			var buf bytes.Buffer
-			_, err = io.Copy(&buf, readEnd)
-			require.NoError(t, err)
+			printMapList(&buf, &models.BPFMapList{Maps: tt.maps})
 			output := buf.String()
 
 			for _, exp := range tt.expected {

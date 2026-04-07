@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strconv"
@@ -40,7 +41,7 @@ var mapListCmd = &cobra.Command{
 			if verbose {
 				printMapListVerbose(mapList)
 			} else {
-				printMapList(mapList)
+				printMapList(os.Stdout, mapList)
 			}
 		}
 	},
@@ -54,8 +55,8 @@ func printMapListVerbose(mapList *models.BPFMapList) {
 	}
 }
 
-func printMapList(mapList *models.BPFMapList) {
-	w := tabwriter.NewWriter(os.Stdout, 5, 0, 3, ' ', 0)
+func printMapList(out io.Writer, mapList *models.BPFMapList) {
+	w := tabwriter.NewWriter(out, 5, 0, 3, ' ', 0)
 	fmt.Fprintf(w, "Name\tNum entries\tNum errors\tCache enabled\n")
 	for _, m := range mapList.Maps {
 		entries := "unknown"
