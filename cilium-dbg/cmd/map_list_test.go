@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -73,7 +72,7 @@ func TestPrintMapList(t *testing.T) {
 			output := buf.String()
 
 			for _, exp := range tt.expected {
-				require.True(t, strings.Contains(output, exp),
+				require.Contains(t, output, exp,
 					"expected output to contain %q, got:\n%s", exp, output)
 			}
 		})
