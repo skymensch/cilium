@@ -254,6 +254,9 @@ func TestPrivilegedVLANBypassConfig(t *testing.T) {
 		}()
 	}
 
+	// VLAN 4004 is explicitly in the bypass list. With the fix, it must appear
+	// on both parent devices (main1 and main2), not only on the device that
+	// already has a dummy1.4004 subinterface.
 	option.Config.VLANBPFBypass = []int{4004}
 	m, err := vlanFilterMacros(devs)
 	require.NoError(t, err)
@@ -262,6 +265,7 @@ case %d: \
 switch (vlan_id) { \
 case 4000: \
 case 4001: \
+case 4004: \
 return true; \
 } \
 break; \
@@ -283,6 +287,37 @@ return false;`, main1.Index, main2.Index), m)
 	m, err = vlanFilterMacros(devs)
 	require.NoError(t, err)
 	require.Equal(t, "return true", m)
+}
+
+// TestPrivilegedVLANBypassConfigNoSubinterface verifies that explicitly
+// configured bypass VLANs are included in the BPF filter even when the
+// corresponding VLAN subinterface does not exist at the time the agent
+// compiles its BPF programs (e.g. the subinterface is created after startup).
+func TestPrivilegedVLANBypassConfigNoSubinterface(t *testing.T) {
+	setupConfigSuite(t)
+
+	var devs []*tables.Device
+
+	main1 := createMainLink("dummy2", t)
+	devs = append(devs, &tables.Device{Name: main1.Name, Index: main1.Index})
+	defer func() {
+		netlink.LinkDel(main1)
+	}()
+
+	// No VLAN subinterfaces exist at all.
+	option.Config.VLANBPFBypass = []int{20, 40}
+	m, err := vlanFilterMacros(devs)
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf(`switch (ifindex) { \
+case %d: \
+switch (vlan_id) { \
+case 20: \
+case 40: \
+return true; \
+} \
+break; \
+} \
+return false;`, main1.Index), m)
 }
 
 func TestPrivilegedWriteNodeConfigExtraDefines(t *testing.T) {

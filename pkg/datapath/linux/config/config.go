@@ -608,12 +608,35 @@ func vlanFilterMacros(nativeDevices []*tables.Device) (string, error) {
 		return "", fmt.Errorf("listing network interfaces: %w", err)
 	}
 
+	vlanIndexes := make(map[int]bool)
 	for _, l := range links {
 		vlan, ok := l.(*netlink.Vlan)
-		// if it's vlan device and we're controlling vlan main device
-		// and either all vlans are allowed, or we're controlling vlan device or vlan is explicitly allowed
-		if ok && devices[vlan.ParentIndex] && (devices[vlan.Index] || allowedVlans[vlan.VlanId]) {
+		if !ok {
+			continue
+		}
+		vlanIndexes[vlan.Index] = true
+		// Include this VLAN if its parent is a native device and either the
+		// VLAN subinterface is itself a native device, or the VLAN ID is in
+		// the explicit bypass list.
+		if devices[vlan.ParentIndex] && (devices[vlan.Index] || allowedVlans[vlan.VlanId]) {
 			vlansByIfIndex[vlan.ParentIndex] = append(vlansByIfIndex[vlan.ParentIndex], vlan.VlanId)
+		}
+	}
+
+	// Explicitly allowed VLANs must be included for all native parent devices
+	// even when the corresponding VLAN subinterface does not exist yet (e.g. it
+	// is created after the agent starts). Without this, the BPF VLAN filter
+	// drops tagged frames on a bypass VLAN until the agent is restarted.
+	// VLAN subinterfaces are skipped: they are not parents and the BPF filter
+	// is keyed by parent device ifindex.
+	for ifIndex := range devices {
+		if vlanIndexes[ifIndex] {
+			continue
+		}
+		for vlanId := range allowedVlans {
+			if !slices.Contains(vlansByIfIndex[ifIndex], vlanId) {
+				vlansByIfIndex[ifIndex] = append(vlansByIfIndex[ifIndex], vlanId)
+			}
 		}
 	}
 
