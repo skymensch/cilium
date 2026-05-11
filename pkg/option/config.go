@@ -2579,6 +2579,9 @@ func (c *DaemonConfig) Populate(logger *slog.Logger, vp *viper.Viper) {
 		}
 		c.VLANBPFBypass = append(c.VLANBPFBypass, vlanID)
 	}
+	if len(c.VLANBPFBypass) > 5 {
+		logging.Fatal(logger, fmt.Sprintf("--%s: too many entries (%d), max 5; use '0' to allow all VLANs", VLANBPFBypass, len(c.VLANBPFBypass)))
+	}
 
 	c.DisableExternalIPMitigation = vp.GetBool(DisableExternalIPMitigation)
 

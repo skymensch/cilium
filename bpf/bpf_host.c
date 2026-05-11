@@ -73,7 +73,7 @@ static __always_inline bool allow_vlan(__u32 __maybe_unused ifindex, __u32 vlan_
 	__u16 ids[VLAN_FILTER_SLOTS] = {
 		CONFIG(vlan_filter_id_0), CONFIG(vlan_filter_id_1),
 		CONFIG(vlan_filter_id_2), CONFIG(vlan_filter_id_3),
-		CONFIG(vlan_filter_id_4), CONFIG(vlan_filter_id_5),
+		CONFIG(vlan_filter_id_4),
 	};
 
 	#pragma unroll

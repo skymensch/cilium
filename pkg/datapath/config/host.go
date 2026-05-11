@@ -188,13 +188,10 @@ func Netdev(ep endpoint.Config, lnc *Config, link netlink.Link, masq4, masq6 net
 
 // setVLANFilter populates the BPF vlan_filter_id_* config slots from the
 // --vlan-bpf-bypass list. 0 bypasses all VLAN-tagged traffic; 0xFFFF marks
-// unused slots. Entries beyond 6 are silently ignored.
+// unused slots. Caller guarantees len(ids) <= 5.
 func setVLANFilter(cfg *BPFHost, ids []int) {
-	slots := [6]uint16{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}
+	slots := [5]uint16{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}
 	for i, id := range ids {
-		if i >= len(slots) {
-			break
-		}
 		slots[i] = uint16(id)
 	}
 	cfg.VlanFilterID0 = slots[0]
@@ -202,5 +199,4 @@ func setVLANFilter(cfg *BPFHost, ids []int) {
 	cfg.VlanFilterID2 = slots[2]
 	cfg.VlanFilterID3 = slots[3]
 	cfg.VlanFilterID4 = slots[4]
-	cfg.VlanFilterID5 = slots[5]
 }
